@@ -4,10 +4,11 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Core.Interfaces
+namespace Core.Enums
 {
-    public interface IAuth
+    public enum ProductType
     {
-
+        Simple = 0,
+        Variable = 1
     }
 }
