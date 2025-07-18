@@ -13,10 +13,10 @@ namespace Infrastructure.Repos
 {
     public class GenericRepo<T> : IGenericRepo<T> where T : class, IDeletable
     {
-        private readonly InventorySystemDbContext dbContext;
+        private readonly StoreFrontDbContext dbContext;
         private readonly DbSet<T> dbSet;
 
-        public GenericRepo(InventorySystemDbContext context, DbSet<T> values)
+        public GenericRepo(StoreFrontDbContext context, DbSet<T> values)
         {
             dbContext = context;
             dbSet = values;

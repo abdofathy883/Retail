@@ -13,24 +13,33 @@ namespace Infrastructure.Data.ModelConfigurations
     {
         public void Configure(EntityTypeBuilder<ApplicationUser> builder)
         {
-            builder.ToTable("Users");
-            builder.HasKey(u => u.Id);
+            builder.Property(u => u.FirstName)
+                .IsRequired()
+                .HasMaxLength(100);
 
-            builder.Property(u => u.FirstName).IsRequired().HasMaxLength(100);
-            builder.Property(u => u.LastName).IsRequired().HasMaxLength(100);
-            builder.Property(u => u.CreatedAt).IsRequired();
-            builder.Property(u => u.IsDeleted).IsRequired();
-            builder.Property(u => u.IsActive).IsRequired();
+            builder.Property(u => u.LastName).IsRequired()
+                .HasMaxLength(100);
 
-            builder.HasOne(u => u.Cart)
-                .WithOne()
-                .HasForeignKey<ApplicationUser>(u => u.CartId)
-                .OnDelete(DeleteBehavior.Cascade);
+            builder.Property(p => p.CreatedAt)
+                .IsRequired()
+                .HasDefaultValueSql("GETDATE()");
 
-            builder.HasOne(u => u.WishList)
-                .WithOne()
-                .HasForeignKey<ApplicationUser>(u => u.WishListId)
-                .OnDelete(DeleteBehavior.Cascade);
+            builder.Property(p => p.UpdatedAt)
+                .HasDefaultValueSql("GETDATE()")
+                .ValueGeneratedOnUpdate();
+
+            builder.OwnsMany(p => p.RefreshTokens, rt =>
+            {
+                rt.WithOwner();
+                rt.Property(r => r.Token)
+                .IsRequired()
+                .HasMaxLength(512);
+                rt.Property(r => r.ExpiresOn)
+                .IsRequired();
+                rt.Property(r => r.CreateOn)
+                .IsRequired()
+                .HasDefaultValueSql("GETDATE()");
+            });
         }
     }
 }

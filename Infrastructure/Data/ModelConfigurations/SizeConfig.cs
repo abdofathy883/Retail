@@ -8,8 +8,10 @@ namespace Infrastructure.Data.ModelConfigurations
     {
         public void Configure(EntityTypeBuilder<Size> builder)
         {
-            builder.ToTable("Sizes");
             builder.HasKey(s => s.Id);
+
+            builder.Property(s => s.Id)
+                .UseIdentityColumn(1, 1);
 
             builder.Property(s => s.Name)
                 .IsRequired()

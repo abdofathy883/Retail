@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace Core.Models
 {
-    public class ProductVarient: IDeletable
+    public class ProductVarient: IDeletable, IProduct
     {
         public int Id { get; set; }
         public Guid ProductId { get; set; }
@@ -20,6 +20,10 @@ namespace Core.Models
         public int Stock { get; set; }
         public string SKU { get; set; } = default!;
         public string? Barcode { get; set; }
+
+        public int NuOfPurchases { get; set; }
+        public int NuOfPutInCart { get; set; }
+        public int NuOfPutInWishList { get; set; }
         public bool IsDeleted { get; set; }
     }
 }

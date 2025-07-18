@@ -5,27 +5,29 @@ using Microsoft.Extensions.Configuration;
 
 namespace Infrastructure.Factory
 {
-    internal class DesignTimeDbContextFactory : IDesignTimeDbContextFactory<InventorySystemDbContext>
+    internal class DesignTimeDbContextFactory : IDesignTimeDbContextFactory<StoreFrontDbContext>
     {
-        public InventorySystemDbContext CreateDbContext(string[] args)
+        public StoreFrontDbContext CreateDbContext(string[] args)
         {
-            var currentDir = Directory.GetCurrentDirectory();
-
-            var parentDir = Directory.GetParent(currentDir)?.FullName;
-
-            var clientAPIDir = Path.Combine(parentDir, "Client API");
+            var basePath = Directory.GetCurrentDirectory();
+            //var parentDir = Directory.GetParent(basePath)?.FullName;
+            //var clientAPIDir = Path.Combine(parentDir, "Client API");
+            var environment = Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT") ?? "Development";
 
             IConfigurationRoot configuration = new ConfigurationBuilder()
-                .SetBasePath(clientAPIDir)
-                .AddJsonFile("appsettings.json")
+                .SetBasePath(basePath)
+                .AddJsonFile("appsettings.json", optional: false)
+                .AddJsonFile($"appsettings.{environment}.json", optional: true)
                 .Build();
 
-            var builder = new DbContextOptionsBuilder<InventorySystemDbContext>();
-            var connectionString = configuration.GetConnectionString("DefaultConnectionString");
+            var connectionString = configuration.GetValue<string>("ConnectionString:DefaultConnection");
+            if (string.IsNullOrEmpty(connectionString))
+                throw new InvalidOperationException("Connection string 'DefaultConnection' not found in appsettings.json.");
 
+            var builder = new DbContextOptionsBuilder<StoreFrontDbContext>();
             builder.UseSqlServer(connectionString);
 
-            return new InventorySystemDbContext(builder.Options);
+            return new StoreFrontDbContext(builder.Options);
         }
     }
 }

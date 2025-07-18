@@ -6,11 +6,9 @@ using System.Threading.Tasks;
 
 namespace Core.DTOs
 {
-    public class OrderItemDTO
+    public class CreateOrderItemDTO
     {
-        public int ProductVariantId { get; set; }
+        public int? ProductVariantId { get; set; }
         public int Quantity { get; set; }
-        public decimal UnitPriceSnapShot { get; set; }
-        public string VariantSummary { get; set; }
     }
 }

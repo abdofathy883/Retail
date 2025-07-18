@@ -8,16 +8,35 @@ namespace Infrastructure.Data.ModelConfigurations
     {
         public void Configure(EntityTypeBuilder<Order> builder)
         {
-            builder.ToTable("Orders");
             builder.HasKey(o => o.Id);
 
-            builder.Property(o => o.UserId).IsRequired();
-            builder.Property(o => o.TotalAmount).IsRequired();
-            builder.Property(o => o.ShippingFee).IsRequired();
-            builder.Property(o => o.Status).IsRequired();
-            builder.Property(o => o.CreatedAt).IsRequired();
-            builder.Property(o => o.PaymentProvider).IsRequired();
-            builder.Property(o => o.IsDeleted).IsRequired();
+            builder.Property(o => o.TotalAmount)
+                .IsRequired()
+                .HasColumnType("decimal(18,2)");
+
+            builder.Property(o => o.ShippingFee)
+                .IsRequired()
+                .HasColumnType("decimal(18,2)");
+
+            builder.Property(o => o.Status)
+                .IsRequired();
+
+            builder.Property(o => o.CreatedAt)
+                .IsRequired();
+
+            builder.Property(o => o.PaidAt)
+                .IsRequired(false);
+
+            builder.Property(o => o.DeliveredAt)
+                .IsRequired(false);
+
+            builder.Property(o => o.PaymentProvider)
+                .IsRequired();
+
+            builder.HasOne(c => c.UserId)
+            .WithMany()
+            .HasForeignKey(c => c.UserId)
+            .OnDelete(DeleteBehavior.SetNull);
 
             builder.HasMany(o => o.Items)
                 .WithOne(oi => oi.Order)
@@ -26,10 +45,10 @@ namespace Infrastructure.Data.ModelConfigurations
 
             builder.OwnsOne(o => o.ShippingAddress, sa =>
             {
-                sa.Property(a => a.Street).HasMaxLength(200);
+                sa.Property(a => a.StreetName).HasMaxLength(200);
                 sa.Property(a => a.City).HasMaxLength(100);
-                sa.Property(a => a.State).HasMaxLength(100);
-                sa.Property(a => a.ZipCode).HasMaxLength(20);
+                sa.Property(a => a.BuildingBumber).HasMaxLength(20);
+                sa.Property(a => a.PostalCode).HasMaxLength(20);
                 sa.Property(a => a.Country).HasMaxLength(100);
             });
         }

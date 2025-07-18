@@ -1,6 +1,8 @@
-﻿using Core.DTOs;
+﻿using AutoMapper;
+using Core.DTOs;
 using Core.Interfaces;
 using Core.Models;
+using Infrastructure.Exceptions;
 
 namespace Infrastructure.Services
 {
@@ -8,13 +10,17 @@ namespace Infrastructure.Services
     {
         private readonly IGenericRepo<Invoice> invoiceRepo;
         private readonly IGenericRepo<Order> orderRepo;
-        public InvoiceService(IGenericRepo<Invoice> repo, IGenericRepo<Order> orderRepo)
+        private readonly IMapper mapper;
+        public InvoiceService(IGenericRepo<Invoice> repo, 
+            IGenericRepo<Order> orderRepo,
+            IMapper _mapper)
         {
             invoiceRepo = repo;
             this.orderRepo = orderRepo;
+            mapper = _mapper;
         }
 
-        public async Task<Invoice> GenerateInvoiceAsync(Guid orderId)
+        public async Task<InvoiceDTO> GenerateInvoiceAsync(Guid orderId)
         {
             if (orderId == Guid.Empty)
             {
@@ -36,7 +42,7 @@ namespace Infrastructure.Services
             };
             await invoiceRepo.AddAsync(invoice);
             await invoiceRepo.SaveAllAsync();
-            return invoice;
+            return mapper.Map<InvoiceDTO>(invoice);
         }
 
         public async Task<InvoiceDTO> GetInvoiceByIdAsync(Guid invoiceId)
@@ -45,20 +51,10 @@ namespace Infrastructure.Services
             {
                 throw new Exception();
             }
-            var invoice = await invoiceRepo.GetByIdAsync(invoiceId);
-            if (invoice is null)
-            {
-                throw new Exception();
-            }
-            return new InvoiceDTO
-            {
-                InvoiceNumber = invoice.InvoiceNumber,
-                CreatedAt = invoice.CreatedAt,
-                ShippingFee = invoice.ShippingFee,
-                Total = invoice.Total,
-                ShippingAddress = invoice.ShippingAddress,
-                PaymentMethod = invoice.PaymentMethod
-            };
+            var invoice = await invoiceRepo.GetByIdAsync(invoiceId)
+                ?? throw new InValidObjectException("Invoice not found");
+
+            return mapper.Map<InvoiceDTO>(invoice);
         }
 
         public Task<InvoiceDTO> GetInvoiceByOrderIdAsync(Guid orderId)

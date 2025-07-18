@@ -16,20 +16,27 @@ namespace Infrastructure.Data.ModelConfigurations
             builder.Property(pv => pv.Id)
                 .UseIdentityColumn(1, 1);
 
-            builder.Property(pv => pv.ColorId)
-                .IsRequired();
-
-            builder.Property(pv => pv.SizeId)
-                .IsRequired();
-
             builder.Property(pv => pv.Price)
                 .IsRequired();
 
             builder.Property(pv => pv.Stock)
                 .IsRequired();
 
-            builder.Property(pv => pv.ProductId)
-                .IsRequired();
+            builder.Property(pv => pv.SKU)
+                .IsRequired()
+                .HasMaxLength(50);
+
+            builder.Property(pv => pv.Barcode)
+                .HasMaxLength(100);
+
+            builder.Property(pv => pv.NuOfPurchases)
+                .HasDefaultValue(0);
+
+            builder.Property(pv => pv.NuOfPutInCart)
+                .HasDefaultValue(0);
+
+            builder.Property(pv => pv.NuOfPutInWishList)
+                .HasDefaultValue(0);
 
             builder.HasOne(pv => pv.Product)
                 .WithMany(p => p.ProductVarients)

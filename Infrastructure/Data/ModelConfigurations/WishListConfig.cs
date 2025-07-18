@@ -13,6 +13,8 @@ namespace Infrastructure.Data.ModelConfigurations
     {
         public void Configure(EntityTypeBuilder<WishList> builder)
         {
+            builder.HasKey(wl => wl.Id);
+
             builder.Property(wl => wl.Id)
                 .UseIdentityColumn(1, 1);
 
@@ -22,10 +24,13 @@ namespace Infrastructure.Data.ModelConfigurations
             builder.Property(wl => wl.WishListItems)
                 .IsRequired();
 
+            builder.Property(wl => wl.LastUpdatedAt)
+                .HasDefaultValueSql("GETDATE()")
+                .ValueGeneratedOnUpdate();
 
             builder.HasOne(wl => wl.User)
-                .WithOne(u => u.WishList)
-                .HasForeignKey<WishList>(wl => wl.UserId)
+                .WithMany()
+                .HasForeignKey(wl => wl.UserId)
                 .OnDelete(DeleteBehavior.Cascade);
 
             builder.HasMany(wl => wl.WishListItems)

@@ -8,12 +8,15 @@ namespace Infrastructure.Data.ModelConfigurations
     {
         public void Configure(EntityTypeBuilder<Color> builder)
         {
-            builder.ToTable("Colors");
             builder.HasKey(c => c.Id);
 
             builder.Property(c => c.Name)
                 .IsRequired()
-                .HasMaxLength(100);
+                .HasMaxLength(50);
+
+            builder.Property(c => c.HexCode)
+                .IsRequired()
+                .HasMaxLength(50);
         }
     }
 }

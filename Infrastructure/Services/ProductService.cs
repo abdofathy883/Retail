@@ -1,4 +1,5 @@
-﻿using Core.DTOs;
+﻿using AutoMapper;
+using Core.DTOs;
 using Core.Interfaces;
 using Core.Models;
 using Infrastructure.Exceptions;
@@ -9,10 +10,14 @@ namespace Infrastructure.Services
     {
         private readonly IGenericRepo<Product> productRepo;
         private readonly MediaUploadService mediaUploadService;
-        public ProductService(IGenericRepo<Product> repo, MediaUploadService mediaUploadService)
+        private readonly IMapper mapper;
+        public ProductService(IGenericRepo<Product> repo,
+            MediaUploadService mediaUploadService,
+            IMapper _mapper)
         {
             productRepo = repo;
             this.mediaUploadService = mediaUploadService;
+            mapper = _mapper;
         }
 
         public async Task<ProductDTO> CreateProductAsync(CreateProductDTO newProduct)
@@ -57,16 +62,7 @@ namespace Infrastructure.Services
             productRepo.Update(product);
             await productRepo.SaveAllAsync();
 
-            return new ProductDTO
-            {
-                Id = product.Id,
-                Name = product.Name,
-                Description = product.Description,
-                ImageUrls = product.ImageUrls,
-                ProductType = product.ProductType,
-                ProductVarients = product.ProductVarients,
-                CategoryId = product.CategoryId
-            };
+            return mapper.Map<ProductDTO>(product);
         }
 
         public async Task<bool> DeleteProductAsync(Guid productId)
@@ -80,23 +76,10 @@ namespace Infrastructure.Services
 
         public async Task<List<ProductDTO>> GetAllProductsAsync()
         {
-            var products = await productRepo.GetAllAsync();
-            
-            var productDTOs = products.Select(p => new ProductDTO
-            {
-                Id = p.Id,
-                Name = p.Name,
-                ImageUrls = p.ImageUrls,
-                Description = p.Description,
-                ProductType = p.ProductType,
-                ProductVarients = p.ProductVarients,
-                CategoryId = p.CategoryId,
-                NuOfPurchases = p.NuOfPurchases,
-                NuOfPutInCart = p.NuOfPutInCart,
-                NuOfPutInWishList = p.NuOfPutInWishList
-            }).ToList();
+            var products = await productRepo.GetAllAsync()
+                ?? throw new InValidObjectException("لا يوجد منتجات متاحة");
 
-            return productDTOs;
+            return mapper.Map<List<ProductDTO>>(products);
         }
 
         public async Task<ProductDTO> GetProductByIdAsync(Guid productId)
@@ -104,26 +87,10 @@ namespace Infrastructure.Services
             if (productId == Guid.Empty)
                 throw new InValidPropertyIdException($"رقم معرف غير صحيح للمنتج, {productId}");
 
-            var product = await productRepo.GetByIdAsync(productId);
+            var product = await productRepo.GetByIdAsync(productId)
+                ?? throw new InValidObjectException($"لم يتم العثور على المنتج الذي يحمل رقم المعرف, {productId}");
 
-            if (product is null)
-            {
-                throw new NotFoundException($"لا يوجد منتج يحمل هذا الرقم المعرف, {productId}");
-            }
-
-            return new ProductDTO
-            {
-                Id = product.Id,
-                Name = product.Name,
-                Description = product.Description,
-                ImageUrls = product.ImageUrls,
-                ProductType = product.ProductType,
-                ProductVarients = product.ProductVarients,
-                CategoryId = product.CategoryId,
-                NuOfPurchases = product.NuOfPurchases,
-                NuOfPutInCart = product.NuOfPutInCart,
-                NuOfPutInWishList = product.NuOfPutInWishList
-            };
+            return mapper.Map<ProductDTO>(product);
         }
 
         public async Task<List<ProductDTO>> GetProductsByCategoryAsync(Guid categoryId)
@@ -133,20 +100,7 @@ namespace Infrastructure.Services
 
             var products = await productRepo.FindAsync(p => p.CategoryId == categoryId && p.IsDeleted == false);
             
-            var productDTOs = products.Select(p => new ProductDTO
-            {
-                Id = p.Id,
-                Name = p.Name,
-                ImageUrls = p.ImageUrls,
-                Description = p.Description,
-                ProductType = p.ProductType,
-                ProductVarients = p.ProductVarients,
-                CategoryId = p.CategoryId,
-                NuOfPurchases = p.NuOfPurchases,
-                NuOfPutInCart = p.NuOfPutInCart,
-                NuOfPutInWishList = p.NuOfPutInWishList
-            }).ToList();
-            return productDTOs;
+            return mapper.Map<List<ProductDTO>>(products);
         }
 
         public async Task<bool> SoftDeleteProductAsync(Guid productId)
@@ -154,9 +108,8 @@ namespace Infrastructure.Services
             if (productId == Guid.Empty)
                 throw new InValidPropertyIdException($"لا يوجد منتج يحمل هذا الرقم المعرف, {productId}");
 
-            var product = await productRepo.GetByIdAsync(productId);
-            if (product is null)
-                throw new InValidObjectException($"لم يتم العثور على المنتج الذي يحمل رقم المعرف, {productId}");
+            var product = await productRepo.GetByIdAsync(productId)
+                ?? throw new InValidObjectException($"لم يتم العثور على المنتج الذي يحمل رقم المعرف, {productId}");
 
             product.IsDeleted = true;
             productRepo.Update(product);
@@ -168,10 +121,8 @@ namespace Infrastructure.Services
             if (oldProductId == Guid.Empty || newProduct is null)
                 throw new InValidPropertyIdException($"الرقم المعرف للمنتج خاطئ, او بيانات المنتج الجديد غير واضحة");
 
-            var oldProduct = await productRepo.GetByIdAsync(oldProductId);
-
-            if (oldProduct is null || oldProduct.IsDeleted == true)
-                throw new InValidObjectException($"لم يتم العثور على المنتج الذي يحمل رقم المعرف, {oldProductId}");
+            var oldProduct = await productRepo.GetByIdAsync(oldProductId)
+                ?? throw new InValidObjectException($"لم يتم العثور على المنتج الذي يحمل رقم المعرف, {oldProductId}");
 
             oldProduct.Name = newProduct.Name;
             oldProduct.Description = newProduct.Description;
@@ -211,19 +162,7 @@ namespace Infrastructure.Services
             oldProduct.UpdatedAt = DateTime.UtcNow;
             productRepo.Update(oldProduct);
             await productRepo.SaveAllAsync();
-            return new ProductDTO
-            {
-                Id = oldProduct.Id,
-                Name = newProduct.Name,
-                Description = oldProduct.Description,
-                ImageUrls = oldProduct.ImageUrls,
-                ProductType = oldProduct.ProductType,
-                ProductVarients = oldProduct.ProductVarients,
-                CategoryId = oldProduct.CategoryId,
-                NuOfPurchases = oldProduct.NuOfPurchases,
-                NuOfPutInCart = oldProduct.NuOfPutInCart,
-                NuOfPutInWishList = oldProduct.NuOfPutInWishList
-            };
+            return mapper.Map<ProductDTO>(oldProduct);
         }
     }
 }

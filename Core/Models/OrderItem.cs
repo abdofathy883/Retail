@@ -13,12 +13,11 @@ namespace Core.Models
         public int OrderId { get; set; }
         public Order Order { get; set; }
 
-        public Guid? ProductId { get; set; }
-        public Guid? ProductVariantId { get; set; }
+        public int ProductVariantId { get; set; }
 
         public int Quantity { get; set; }
-        public decimal UnitPrice { get; set; }
+        public decimal UnitPriceSnapshot { get; set; }
 
-        public string? VariantSummary { get; set; }
+        public string? VariantSummary { get; set; } ////////
     }
 }

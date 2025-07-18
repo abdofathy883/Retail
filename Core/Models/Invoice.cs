@@ -18,7 +18,7 @@ namespace Core.Models
         public decimal ShippingFee { get; set; }
         public decimal Total { get; set; }
 
-        public ShippingAddress ShippingAddress { get; set; } // reuse value object
+        public ShippingAddress ShippingAddress { get; set; } = new ShippingAddress();
         public PaymentProvider PaymentMethod { get; set; }
         public DateTime CreatedAt { get; set; }
         public DateTime? UpdatedAt { get; set; }

@@ -49,8 +49,8 @@ namespace Client_API.Controllers
             return Ok();
         }
 
-        [HttpPut("delete-from-cart")]
-        public async Task<IActionResult> DeleteFromCartAsync(CartOwner cartOwner, int cartItemId)
+        [HttpPut("remove-from-cart")]
+        public async Task<IActionResult> RemoveFromCartAsync(CartOwner cartOwner, int cartItemId)
         {
             if (cartOwner is null || cartItemId ==0)
             {

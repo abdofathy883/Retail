@@ -1,4 +1,5 @@
-﻿using Core.DTOs;
+﻿using AutoMapper;
+using Core.DTOs;
 using Core.Interfaces;
 using Core.Models;
 using Core.Models.ValueObjects;
@@ -14,19 +15,22 @@ namespace Infrastructure.Services
         private readonly IGenericRepo<CartItem> cartItemRepo;
         private readonly IGenericRepo<Product> productRepo;
         private readonly IGenericRepo<ProductVarient> productVarientRepo;
+        private readonly IMapper mapper;
 
         public CartService(
         UserManager<ApplicationUser> _userManager,
         IGenericRepo<Cart> _cartRepo,
         IGenericRepo<CartItem> _cartItemRepo,
         IGenericRepo<Product> productRepo,
-        IGenericRepo<ProductVarient> _productVarientRepo)
+        IGenericRepo<ProductVarient> _productVarientRepo,
+        IMapper _mapper)
         {
             userManager = _userManager;
             cartRepo = _cartRepo;
             cartItemRepo = _cartItemRepo;
             this.productRepo = productRepo;
             productVarientRepo = _productVarientRepo;
+            mapper = _mapper;
         }
         public async Task<CartDTO> AddToCartAsync(CartOwner cartOwner, AddToCartDTO newCartItem)
         {
@@ -49,7 +53,8 @@ namespace Infrastructure.Services
             if (varient.Stock < newCartItem.Quantity)
                 throw new InValidObjectException("Product is out of stock");
 
-            var cart = await GetCartForOwnerAsync(cartOwner);
+            var cart = await GetCartForOwnerAsync(cartOwner)
+                ?? throw new InValidObjectException("Cart not found");
 
             var existingItem = cart.Items.FirstOrDefault(i => i.ProductVariantId == varient.Id);
 
@@ -70,12 +75,16 @@ namespace Infrastructure.Services
 
             cart.LastUpdatedAt = DateTime.UtcNow;
 
+
             if (cart.Id == 0)
                 await cartRepo.AddAsync(cart);
 
             await cartRepo.SaveAllAsync();
 
-            return MapToCartDTO(cart);
+            varient.NuOfPutInCart++;
+            await productVarientRepo.SaveAllAsync();
+
+            return mapper.Map<CartDTO>(cart);
         }
 
         public async Task<CartDTO> ClearCartAsync(CartOwner cartOwner)
@@ -98,7 +107,7 @@ namespace Infrastructure.Services
             cartRepo.Update(cart);
             await cartRepo.SaveAllAsync();
 
-            return MapToCartDTO(cart);
+            return mapper.Map<CartDTO>(cart);
         }
 
         public async Task<CartDTO> RemoveFromCartAsync(CartOwner cartOwner, int cartItemId)
@@ -124,7 +133,7 @@ namespace Infrastructure.Services
             cartRepo.Update(cart);
             await cartRepo.SaveAllAsync();
 
-            return MapToCartDTO(cart);
+            return mapper.Map<CartDTO>(cart);
         }
 
         public async Task<CartDTO> GetCartAsync(CartOwner cartOwner)
@@ -145,7 +154,7 @@ namespace Infrastructure.Services
                 };
             }
 
-            return MapToCartDTO(cart);
+            return mapper.Map<CartDTO>(cart);
         }
 
         public async Task<CartDTO> UpdateCartItemQuantityAsync(CartOwner cartOwner, UpdateCartDTO update)
@@ -200,7 +209,7 @@ namespace Infrastructure.Services
                             .FirstOrDefault();
 
             if (anonymousCart == null)
-                return userCart != null ? MapToCartDTO(userCart) : new CartDTO();
+                return userCart != null ? mapper.Map<CartDTO>(userCart) : new CartDTO();
 
             if (userCart == null)
             {
@@ -245,7 +254,7 @@ namespace Infrastructure.Services
             cartRepo.Update(userCart);
             await cartRepo.SaveAllAsync();
 
-            return MapToCartDTO(userCart);
+            return mapper.Map<CartDTO>(userCart);
         }
        
         private async Task EnsureValidCartOwnerAsync(CartOwner owner)
@@ -270,26 +279,6 @@ namespace Infrastructure.Services
                 return (await cartRepo.FindAsync(c => c.CartToken == cartOwner.CartToken && !c.IsDeleted)).FirstOrDefault();
 
             return null;
-        }
-
-        private static CartDTO MapToCartDTO(Cart cart)
-        {
-            return new CartDTO
-            {
-                Id = cart.Id,
-                UserId = cart.UserId,
-                CartToken = cart.CartToken,
-                LastUpdatedAt = cart.LastUpdatedAt,
-                Items = cart.Items.Select(i => new CartItemDTO
-                {
-                    Id = i.Id,
-                    CartId = i.CartId,
-                    ProductVariantId = i.ProductVariantId,
-                    Quantity = i.Quantity,
-                    UnitPriceSnapshot = i.UnitPriceSnapshot,
-                    AddedAt = i.AddedAt
-                }).ToList()
-            };
         }
     }
 }

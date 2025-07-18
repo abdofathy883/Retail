@@ -2,6 +2,7 @@
 using Core.Enums;
 using Core.Interfaces;
 using Core.Models;
+using Infrastructure.Exceptions;
 using Microsoft.AspNetCore.Identity;
 
 namespace Infrastructure.Services
@@ -12,7 +13,7 @@ namespace Infrastructure.Services
         private readonly UserManager<ApplicationUser> userManager;
         private readonly IJWTService jWTService;
         private readonly EmailService emailService;
-        public AuthService(IGenericRepo<ApplicationUser> repo, 
+        public AuthService(IGenericRepo<ApplicationUser> repo,
             UserManager<ApplicationUser> user,
             IJWTService jWTService,
             EmailService emailService)
@@ -24,36 +25,22 @@ namespace Infrastructure.Services
         }
         public async Task<bool> DeleteUserAsync(string userId)
         {
-            if (string.IsNullOrEmpty(userId))
-            {
-                throw new Exception();
-            }
-            var user = await userManager.FindByIdAsync(userId);
-            if (user is null)
-            {
-                throw new Exception();
-            }
+            await GetUserOrThrow(userId);
+
+            var user = await userManager.FindByIdAsync(userId)
+                ?? throw new InValidObjectException("");
+
             var result = await userManager.DeleteAsync(user);
+
             if (!result.Succeeded)
-            {
                 throw new Exception();
-            }
             else
                 return true;
         }
 
         public async Task<UserDTO> GetUserByIdAsync(string userId)
         {
-            if (string.IsNullOrEmpty(userId))
-            {
-                throw new Exception();
-            }
-
-            var user = await userManager.FindByIdAsync(userId);
-            if (user == null)
-            {
-                throw new Exception();
-            }
+            var user = await GetUserOrThrow(userId);
 
             return new UserDTO
             {
@@ -151,22 +138,15 @@ namespace Infrastructure.Services
             var authDTO = new AuthResponseDTO
             {
                 IsAuthenticated = true,
-                Message = "تم استلام طلبكم وسيتم التواصل معكم قريبا"
+                Message = "تم تسجيل حساب جديد بنجاح"
             };
             return authDTO;
         }
 
         public async Task<bool> SoftDeleteUserAsync(string userId)
         {
-            if (string.IsNullOrEmpty(userId))
-            {
-                throw new Exception();
-            }
-            var user = await userManager.FindByIdAsync(userId);
-            if (user is null)
-            {
-                throw new Exception();
-            }
+            var user = await GetUserOrThrow(userId);
+
             user.IsDeleted = true;
             var result = await userManager.UpdateAsync(user);
             if (!result.Succeeded)
@@ -181,17 +161,13 @@ namespace Infrastructure.Services
 
         public async Task<AuthResponseDTO> UpdateUserAsync(string userId, UpdateUserDTO updatedUser)
         {
-            if (string.IsNullOrEmpty(userId) || updatedUser is null)
-            {
-                throw new Exception();
-            }
-            var user = await userManager.FindByIdAsync(userId);
-            if (user is null)
-            {
-                throw new Exception();
-            }
-            user.FirstName = updatedUser.FirstName;
-            user.LastName = updatedUser.LastName;
+            if (updatedUser is null)
+                throw new InValidObjectException("");
+
+            var user = await GetUserOrThrow(userId);
+
+            user.FirstName = updatedUser.FirstName ?? user.FirstName;
+            user.LastName = updatedUser.LastName ?? user.LastName;
             user.PhoneNumber = updatedUser.PhoneNumber;
             user.ConcurrencyStamp = updatedUser.ConcurrencyStamp;
             await userManager.UpdateAsync(user);
@@ -255,6 +231,12 @@ namespace Infrastructure.Services
             }
 
             return errors;
+        }
+
+        private async Task<ApplicationUser> GetUserOrThrow(string userId)
+        {
+            var user = await userManager.FindByIdAsync(userId);
+            return user ?? throw new InValidObjectException("User not found");
         }
     }
 }

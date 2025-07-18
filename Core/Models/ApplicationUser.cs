@@ -13,7 +13,7 @@ namespace Core.Models
     {
         public required string FirstName { get; set; }
         public required string LastName { get; set; }
-        public EmployeeProfile? Employee { get; set; }
+        //public EmployeeProfile? Employee { get; set; }
         public List<RefreshToken> RefreshTokens { get; set; }
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
         public DateTime? UpdatedAt { get; set; }

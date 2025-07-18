@@ -15,17 +15,17 @@ namespace Client_API.Controllers
         }
 
         [HttpPost("add-to-wishlist")]
-        public async Task<IActionResult> AddToWishListAsync(string customerId, Guid productId)
+        public async Task<IActionResult> AddToWishListAsync(string customerId, int productVarientId)
         {
-            if (string.IsNullOrEmpty(customerId) || productId == Guid.Empty)
+            if (string.IsNullOrEmpty(customerId) || productVarientId == 0)
             {
                 return BadRequest();
             }
-            await wishListService.AddToWishlistAsync(customerId, productId);
+            await wishListService.AddToWishlistAsync(customerId, productVarientId);
             return Ok();
         }
 
-        [HttpPut("clear-wishlist")]
+        [HttpDelete("clear-wishlist")]
         public async Task<IActionResult> ClearWishListAsync(string customerId)
         {
             if (string.IsNullOrEmpty(customerId))
@@ -35,8 +35,8 @@ namespace Client_API.Controllers
             await wishListService.ClearWishlistAsync(customerId);
             return Ok();
         }
-        [HttpPut("modify-wishlist")]
-        public async Task<IActionResult> DeleteFromWishListAsync(string customerId, int wishlistItemId)
+        [HttpPut("remove-from-wishlist")]
+        public async Task<IActionResult> RemoveFromWishListAsync(string customerId, int wishlistItemId)
         {
             if (string.IsNullOrEmpty(customerId) || wishlistItemId == 0)
             {
@@ -45,8 +45,8 @@ namespace Client_API.Controllers
             await wishListService.RemoveFromWishlistAsync(customerId, wishlistItemId);
             return Ok();
         }
-        [HttpGet]
-        public async Task<IActionResult> GetWishListAsync(string customerId)
+        [HttpGet("get-wishlist")]
+        public async Task<IActionResult> GetWishListByUserIdAsync(string customerId)
         {
             if (string.IsNullOrEmpty(customerId))
             {

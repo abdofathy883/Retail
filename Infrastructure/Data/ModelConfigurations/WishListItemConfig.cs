@@ -8,17 +8,17 @@ namespace Infrastructure.Data.ModelConfigurations
     {
         public void Configure(EntityTypeBuilder<WishListItem> builder)
         {
-            builder.ToTable("WishListItems");
             builder.HasKey(wli => wli.Id);
+            builder.Property(wli => wli.Id)
+                .UseIdentityColumn(1, 1);
 
-            builder.Property(wli => wli.ProductId).IsRequired();
-            builder.Property(wli => wli.WishListId).IsRequired();
-            builder.Property(wli => wli.CreatedAt).IsRequired();
-            builder.Property(wli => wli.IsDeleted).IsRequired();
+            builder.Property(wli => wli.AddedAt)
+                .IsRequired()
+                .HasDefaultValueSql("GETDATE()");
 
-            builder.HasOne(wli => wli.Product)
+            builder.HasOne(wli => wli.ProductVarient)
                 .WithMany()
-                .HasForeignKey(wli => wli.ProductId)
+                .HasForeignKey(wli => wli.ProductVarientId)
                 .OnDelete(DeleteBehavior.Restrict);
 
             builder.HasOne(wli => wli.WishList)

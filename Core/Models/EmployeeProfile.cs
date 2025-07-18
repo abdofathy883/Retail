@@ -6,13 +6,10 @@ using System.Threading.Tasks;
 
 namespace Core.Models
 {
-    public class EmployeeProfile: ApplicationUser
+    public class EmployeeProfile
     {
-        public Guid Id { get; set; } // Same as AppUser.Id
-        public string UserId { get; set; }
-        public ApplicationUser User { get; set; }
+        //public Guid EmployeeId { get; set; } // Same as AppUser.Id
 
-        public decimal MonthlySalary { get; set; }
-        public List<ClockEntry> ClockEntries { get; set; } = new();
+        //public decimal MonthlySalary { get; set; }
     }
 }

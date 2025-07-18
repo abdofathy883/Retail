@@ -1,6 +1,9 @@
-﻿using Core.DTOs;
+﻿using AutoMapper;
+using Core.DTOs;
 using Core.Interfaces;
 using Core.Models;
+using Core.Models.ValueObjects;
+using Infrastructure.Exceptions;
 using Microsoft.AspNetCore.Identity;
 
 namespace Infrastructure.Services
@@ -11,99 +14,104 @@ namespace Infrastructure.Services
         private readonly IGenericRepo<WishList> wishlistRepo;
         private readonly IGenericRepo<WishListItem> wishlistItemRepo;
         private readonly IGenericRepo<Product> productRepo;
+        private readonly IGenericRepo<ProductVarient> productVarientRepo;
+        private readonly IMapper mapper;
+
         public WishListService(UserManager<ApplicationUser> _userManager,
             IGenericRepo<WishList> _wishlistRepo,
             IGenericRepo<WishListItem> _wishlistItemRepo,
-            IGenericRepo<Product> productRepo)
+            IGenericRepo<Product> productRepo,
+            IGenericRepo<ProductVarient> productVarientRepo,
+            IMapper _mapper)
         {
             userManager = _userManager;
             wishlistRepo = _wishlistRepo;
             wishlistItemRepo = _wishlistItemRepo;
             this.productRepo = productRepo;
+            this.productVarientRepo = productVarientRepo;
+            mapper = _mapper;
         }
 
-        public async Task<WishListDTO> AddToWishlistAsync(string customerId, Guid productId)
+        public async Task<WishListDTO> AddToWishlistAsync(string customerId, int productVarientId)
         {
             await GetUserOrThrow(customerId);
 
-            var wishlist = await wishlistRepo.FindAsync(w => w.UserId == customerId);
-            var wishlistItem = wishlist.FirstOrDefault() ?? new WishList
+            var wishlist = await GetWishListForUserAsync(customerId) 
+                ?? throw new InValidObjectException("Wishlist not found");
+            
+            var varient = (await productVarientRepo.GetByIdAsync(productVarientId))
+                ?? throw new InValidPropertyIdException("Product variant not found");
+
+            var isAlreadyInWishlist = await IsInWishlistAsync(customerId, productVarientId);
+
+            if (isAlreadyInWishlist)
+                throw new InValidObjectException("Product already in wishlist");
+
+            if (wishlist.WishListItems == null)
+                wishlist.WishListItems = new List<WishListItem>();
+
+            wishlist.WishListItems.Add(new WishListItem
             {
-                UserId = customerId,
-                WishListItems = new List<WishListItem>()
-            };
+                ProductVarientId = productVarientId,
+                WishListId = wishlist.Id,
+            });
+            wishlist.LastUpdatedAt = DateTime.UtcNow;
 
-            if (wishlistItem is null || wishlistItem.WishListItems is null)
-            {
-                throw new Exception();
-            }
-
-            if (!wishlistItem.WishListItems.Any(i => i.ProductId == productId))
-            {
-                wishlistItem.WishListItems.Add(new WishListItem
-                {
-                    ProductId = productId,
-                });
-                if (wishlistItem.Id == 0)
-                {
-                    await wishlistRepo.AddAsync(wishlistItem);
-                }
-
-                await wishlistRepo.SaveAllAsync();
-            }
-        }
-
-        public async Task<bool> ClearWishlistAsync(string customerId)
-        {
-            await GetUserOrThrow(customerId);
-
-            var wishlist = await wishlistRepo.FindAsync(w => w.UserId == customerId);
-            var wishListItem = wishlist.FirstOrDefault();
-
-            if (wishListItem is null)
-            {
-                throw new Exception();
-            }
-
-            wishListItem.IsDeleted = true;
-
-            return await wishlistRepo.SaveAllAsync();
-        }
-
-        public async Task<bool> DeleteFromWishlistAsync(string customerId, int wishlistItemId)
-        {
-            await GetUserOrThrow(customerId);
-
-            var wishlistItem = await wishlistItemRepo.FindAsync(w => w.WishListId == wishlistItemId);
-
-            if (wishlistItem is null)
-            {
-                throw new Exception();
-            }
-
-            await wishlistItemRepo.SoftDeleteByIdAsync(wishlistItem);
             await wishlistItemRepo.SaveAllAsync();
+
+            varient.NuOfPutInWishList++;
+            await productVarientRepo.SaveAllAsync();
+
+            return mapper.Map<WishListDTO>(wishlist);
+        }
+
+        public async Task<WishListDTO> ClearWishlistAsync(string customerId)
+        {
+            await GetUserOrThrow(customerId);
+
+            var wishlist = await GetWishListForUserAsync(customerId);
+
+            if (wishlist is null)
+                throw new InValidObjectException("");
+
+            wishlist.WishListItems.Clear();
+            wishlistRepo.Update(wishlist);
+            await wishlistRepo.SaveAllAsync();
+
+            return mapper.Map<WishListDTO>(wishlist);
+        }
+
+        public async Task<WishListDTO> RemoveFromWishlistAsync(string customerId, int wishlistItemId)
+        {
+            await GetUserOrThrow(customerId);
+
+            var wishlistItem = await wishlistItemRepo.GetByIdAsync(wishlistItemId);
+            if (wishlistItem is null)
+                throw new InValidObjectException("Wishlist item not found");
+
+            var wishlist = await GetWishListForUserAsync(customerId);
+            if (wishlistItem is null)
+                throw new InValidObjectException("");
+
+            wishlist.WishListItems.Remove(wishlistItem);
+            wishlistRepo.Update(wishlist);
+            await wishlistRepo.SaveAllAsync();
+
+            return mapper.Map<WishListDTO>(wishlist);
+
         }
 
         public async Task<WishListDTO> GetWishlistByUserIdAsync(string customerId)
         {
             await GetUserOrThrow(customerId);
 
-            var wishlist = await wishlistRepo.FindAsync(w => w.UserId == customerId);
-            var wishListItem = wishlist.FirstOrDefault();
+            var wishlist = await GetWishListForUserAsync(customerId);
 
-            if (wishListItem is null || wishListItem.WishListItems is null)
-            {
-                throw new Exception();
-            }
+            if (wishlist is null)
+                throw new InValidObjectException("Wishlist not found");
 
-            return new WishListDTO
-            {
-                Items = wishListItem?.WishListItems.Select(w => new WishListItemDTO
-                {
+            return mapper.Map<WishListDTO>(wishlist);
 
-                }).ToList() ?? new List<WishListItemDTO>()
-            };
         }
 
         private async Task<ApplicationUser> GetUserOrThrow(string customerId)
@@ -111,22 +119,27 @@ namespace Infrastructure.Services
             var user = await userManager.FindByIdAsync(customerId);
             return user ?? throw new Exception("User not found");
         }
-
-        private static WishListDTO MapToCartDTO(WishList wishList)
+        public async Task<bool> IsInWishlistAsync(string customerId, int productVarientId)
         {
-            return new WishListDTO
-            {
-                Id = wishList.Id,
-                UserId = wishList.UserId,
-                LastUpdatedAt = wishList.LastUpdatedAt,
-                WishListItems = wishList.WishListItems.Select(i => new WishListItemDTO
-                {
-                    Id = i.Id,
-                    ProductId = i.ProductId,
-                    WishListId = i.WishListId,
-                    AddedAt = i.AddedAt
-                }).ToList()
-            };
+            await GetUserOrThrow(customerId);
+
+            var wishlist = await GetWishListForUserAsync(customerId);
+
+            var product = await productRepo.GetByIdAsync(productVarientId);
+
+            if (wishlist is null || product is null)
+                throw new InValidObjectException("Wishlist or product not found");
+
+            return wishlist.WishListItems.Any(i => i.ProductVarientId == productVarientId);
         }
+
+        private async Task<WishList?> GetWishListForUserAsync(string customerId)
+        {
+            if (!string.IsNullOrEmpty(customerId))
+                return (await wishlistRepo.FindAsync(c => c.UserId == customerId && !c.IsDeleted)).FirstOrDefault();
+            else
+                throw new InValidObjectException("");
+        }
+
     }
 }

@@ -25,7 +25,7 @@ namespace Client_API.Controllers
             return Ok();
         }
         [HttpPut("update-product")]
-        public async Task<IActionResult> UpdateProductAsync(Guid oldProductId, CreateProductDTO newProduct)
+        public async Task<IActionResult> UpdateProductAsync(Guid oldProductId, UpdateProductDTO newProduct)
         {
             if (!ModelState.IsValid || oldProductId == Guid.Empty)
             {

@@ -8,6 +8,8 @@ namespace Infrastructure.Data.ModelConfigurations
     {
         public void Configure(EntityTypeBuilder<ProductImage> builder)
         {
+            builder.HasKey(p => p.Id);
+
             builder.Property(p => p.Id)
                 .UseIdentityColumn(1, 1);
 
@@ -18,8 +20,9 @@ namespace Infrastructure.Data.ModelConfigurations
             builder.Property(pi => pi.IsFeatured)
                 .IsRequired();
 
-            builder.Property(pi => pi.ProductId)
-                .IsRequired();
+            builder.Property(pi => pi.AltText)
+                .IsRequired(false)
+                .HasMaxLength(200);
 
             builder.HasOne(pi => pi.Product)
                 .WithMany(p => p.ImageUrls)
