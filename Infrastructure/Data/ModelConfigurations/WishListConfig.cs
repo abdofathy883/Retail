@@ -21,9 +21,6 @@ namespace Infrastructure.Data.ModelConfigurations
             builder.Property(wl => wl.UserId)
                 .IsRequired();
 
-            builder.Property(wl => wl.WishListItems)
-                .IsRequired();
-
             builder.Property(wl => wl.LastUpdatedAt)
                 .HasDefaultValueSql("GETDATE()")
                 .ValueGeneratedOnUpdate();

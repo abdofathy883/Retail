@@ -22,7 +22,7 @@ namespace Infrastructure.Services
                 Directory.CreateDirectory(uploadsFolder);
             }
             var sanitizedImageName = string.Join("_", imageName.Split(Path.GetInvalidFileNameChars()));
-            var fileNameWithoutExt = $"{sanitizedImageName}_Tahfez-Quran";
+            var fileNameWithoutExt = $"{sanitizedImageName}_Retail";
             var webpFileName = fileNameWithoutExt + ".webp";
             var webpFilePath = Path.Combine(uploadsFolder, webpFileName);
             using var webPImage = await Image.LoadAsync(image.OpenReadStream());

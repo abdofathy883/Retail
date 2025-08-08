@@ -16,25 +16,7 @@ namespace Client_API.Controllers
             categoryService = service;
         }
 
-        [HttpPost("create-new-category")]
-        public async Task<IActionResult> CreateCategoryAsync([FromForm] Create_UpdateCategoryDTO newCategory)
-        {
-            if (!ModelState.IsValid)
-            {
-                return BadRequest();
-            }
-            try
-            {
-                var result = await categoryService.CreateCategoryAsync(newCategory);
-                return Ok(result);
-            }
-            catch(Exception ex)
-            {
-                return BadRequest(ex);
-            }
-        }
-
-        [HttpGet("all-categories")]
+        [HttpGet]
         public async Task<IActionResult> GetAllcategoriesAsync()
         {
             try
@@ -51,7 +33,7 @@ namespace Client_API.Controllers
                 return NotFound(ex);
             }
         }
-        [HttpGet("category-by-id")]
+        [HttpGet("{categoryId}")]
         public async Task<IActionResult> GetCategoryByIdAsync(Guid categoryId)
         {
             if (categoryId == Guid.Empty)
@@ -67,39 +49,6 @@ namespace Client_API.Controllers
             {
                 return BadRequest(ex);
             }
-        }
-
-        [HttpPut("update-category/{oldCategoryId}")]
-        public async Task<IActionResult> UpdateCategoryAsync(Guid oldCategoryId, [FromForm] Create_UpdateCategoryDTO newCategory)
-        {
-            if (oldCategoryId == Guid.Empty || newCategory is null)
-            {
-                return BadRequest();
-            }
-            var result = await categoryService.UpdateCategoryAsync(oldCategoryId, newCategory);
-            return Ok(result);
-        }
-
-        [HttpPut("delete-category/{categoryId}")]
-        public async Task<IActionResult> SoftDeleteCategoryAsync(Guid categoryId)
-        {
-            if (categoryId == Guid.Empty)
-            {
-                return BadRequest();
-            }
-            await categoryService.SoftDeleteCategoryAsync(categoryId);
-            return Ok();
-        }
-
-        [HttpDelete("delete-category-perminent/{categoryId}")]
-        public async Task<IActionResult> PerminentDeleteCategoryAsync(Guid categoryId)
-        {
-            if (categoryId == Guid.Empty)
-            {
-                return BadRequest();
-            }
-            await categoryService.DeleteCategoryAsync(categoryId);
-            return Ok();
         }
     }
 }

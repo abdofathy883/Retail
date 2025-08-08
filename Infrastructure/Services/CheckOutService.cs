@@ -16,12 +16,12 @@ namespace Infrastructure.Services
             paymentFactory = payment;
         }
 
-        public async Task HandlePayment(Order order)
-        {
-            var provider = order.PaymentProvider;
-            var gateway = paymentFactory.GetGetway(provider);
+        //public async Task HandlePayment(Order order)
+        //{
+        //    var provider = order.PaymentProvider;
+        //    var gateway = paymentFactory.GetGetway(provider);
 
-            //.......
-        }
+        //    //.......
+        //}
     }
 }

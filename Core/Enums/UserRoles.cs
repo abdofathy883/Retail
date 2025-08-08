@@ -2,11 +2,10 @@
 {
     public enum UserRoles
     {
-        Admin = 1,
-        customer = 2,
-        Guest = 3,
-        SuperAdmin = 4,
-        Cashier = 5,
-        Manager = 6,
+        SuperAdmin = 1,
+        Admin = 2,
+        Customer = 3,
+        Cashier = 4,
+        Manager = 5,
     }
 }

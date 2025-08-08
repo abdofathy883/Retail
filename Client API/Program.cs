@@ -1,11 +1,15 @@
 
 using Core.Interfaces;
+using Core.Interfaces.BackStore_Interfaces;
 using Core.Models;
 using Core.Settings;
 using Infrastructure.Data;
+using Infrastructure.Data.DbSeeder;
 using Infrastructure.Factory;
+using Infrastructure.MappingProfiles;
 using Infrastructure.Repos;
 using Infrastructure.Services;
+using Infrastructure.Services.BackStore_Services;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
@@ -17,7 +21,7 @@ namespace Client_API
 {
     public class Program
     {
-        public static void Main(string[] args)
+        public static async Task Main(string[] args)
         {
             var builder = WebApplication.CreateBuilder(args);
 
@@ -41,9 +45,18 @@ namespace Client_API
             builder.Services.AddSingleton<JWTSettings>(jwtOptions);
 
 
-
+            builder.Services.AddAutoMapper(cfg =>
+            {
+                cfg.AddProfile<CartProfile>();
+                cfg.AddProfile<CategoryProfile>();
+                cfg.AddProfile<InvoiceProfile>();
+                cfg.AddProfile<OrderProfile>();
+                cfg.AddProfile<ProductProfile>();
+                cfg.AddProfile<WishListProfile>();
+            });
 
             builder.Services.AddScoped<IAuthService, AuthService>();
+            builder.Services.AddScoped<IJWTService, JWTService>();
             builder.Services.AddScoped<ICartService, CartService>();
             builder.Services.AddScoped<IWishListService, WishListService>();
             builder.Services.AddScoped<ICategoryService, CategoryService>();
@@ -51,7 +64,14 @@ namespace Client_API
             builder.Services.AddScoped<I_InvoiceService, InvoiceService>();
             builder.Services.AddScoped<IOrderService, OrderService>();
             builder.Services.AddScoped<IVendorService, VendorService>();
-            builder.Services.AddScoped<IWishListService, WishListService>();
+            //builder.Services.AddScoped<IWishListService, WishListService>();
+            builder.Services.AddScoped<ISizeService, SizeService>();
+            builder.Services.AddScoped<IColorService, ColorService>();
+            builder.Services.AddScoped<ICategoryAdminService, CategoryAdminService>();
+            builder.Services.AddScoped<IAuthAdminService, AuthAdminService>();
+            builder.Services.AddScoped<IProductAdminService, ProductAdminService>();
+
+            builder.Services.AddScoped<IEmailService, EmailService>();
 
             builder.Services.AddScoped<PaymobService>();
             builder.Services.AddScoped<FawryService>();
@@ -87,7 +107,9 @@ namespace Client_API
             {
                 options.AddPolicy("AllowAll", policy =>
                 {
-                    policy.AllowAnyOrigin().AllowAnyMethod().AllowAnyHeader();
+                    policy.AllowAnyOrigin()
+                    .AllowAnyMethod()
+                    .AllowAnyHeader();
                 });
             });
 
@@ -100,13 +122,20 @@ namespace Client_API
             }
 
             app.UseDeveloperExceptionPage();
-            app.UseHttpsRedirection();
+            //app.UseHttpsRedirection();
             app.UseCors("AllowAll");
             app.UseAuthentication();
             app.UseAuthorization();
 
 
             app.MapControllers();
+
+            using (var scope = app.Services.CreateScope())
+            {
+                var services = scope.ServiceProvider;
+                await DbSeeder.SeedAsync(services);
+            }
+
 
             app.Run();
         }

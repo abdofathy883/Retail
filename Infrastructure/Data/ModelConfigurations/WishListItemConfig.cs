@@ -9,6 +9,7 @@ namespace Infrastructure.Data.ModelConfigurations
         public void Configure(EntityTypeBuilder<WishListItem> builder)
         {
             builder.HasKey(wli => wli.Id);
+
             builder.Property(wli => wli.Id)
                 .UseIdentityColumn(1, 1);
 

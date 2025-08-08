@@ -29,9 +29,10 @@ namespace Infrastructure.Services
             var claims = new List<Claim>
         {
             new (JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
-            new (JwtRegisteredClaimNames.Sub, appUser.UserName??""),
+            new (JwtRegisteredClaimNames.Sub, appUser.Id),
             new (JwtRegisteredClaimNames.Email, appUser.Email ?? ""),
-            new ("uid", appUser.Id)
+            //new Claim(ClaimTypes.NameIdentifier, appUser.Id),
+            //new ("uid", appUser.Id)
         }.Union(userClaims)
              .Union(roleClaims);
 

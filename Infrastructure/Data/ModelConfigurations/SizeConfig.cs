@@ -11,7 +11,8 @@ namespace Infrastructure.Data.ModelConfigurations
             builder.HasKey(s => s.Id);
 
             builder.Property(s => s.Id)
-                .UseIdentityColumn(1, 1);
+                .UseIdentityColumn(1, 1)
+                .ValueGeneratedOnAdd();
 
             builder.Property(s => s.Name)
                 .IsRequired()

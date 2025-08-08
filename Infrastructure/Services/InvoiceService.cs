@@ -62,11 +62,11 @@ namespace Infrastructure.Services
             throw new NotImplementedException();
         }
 
-        private async Task<string> GenerateInvoiceNumberAsync()
-        {
-            var last = ""; // await invoiceRepo.GetLastAsync();
-            var nextNumber = ""; // last != null ? ExtractNumber(last.InvoiceNumber) + 1 : 1;
-            return $"INV-{nextNumber:D6}";
-        }
+        //private async Task<string> GenerateInvoiceNumberAsync()
+        //{
+        //    var last = ""; // await invoiceRepo.GetLastAsync();
+        //    var nextNumber = ""; // last != null ? ExtractNumber(last.InvoiceNumber) + 1 : 1;
+        //    return $"INV-{nextNumber:D6}";
+        //}
     }
 }

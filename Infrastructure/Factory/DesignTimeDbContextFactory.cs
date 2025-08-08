@@ -20,7 +20,8 @@ namespace Infrastructure.Factory
                 .AddJsonFile($"appsettings.{environment}.json", optional: true)
                 .Build();
 
-            var connectionString = configuration.GetValue<string>("ConnectionString:DefaultConnection");
+            var connectionString = configuration.GetConnectionString("DefaultConnection");
+            //var connectionString = configuration.GetValue<string>("ConnectionString:DefaultConnection");
             if (string.IsNullOrEmpty(connectionString))
                 throw new InvalidOperationException("Connection string 'DefaultConnection' not found in appsettings.json.");
 

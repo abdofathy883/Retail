@@ -11,8 +11,8 @@ namespace Core.Models
 
         public ICollection<Product> Products { get; set; } = new List<Product>();
 
-        public int VendorId { get; set; }
-        public Vendor Vendor { get; set; }
+        //public int VendorId { get; set; }
+        //public Vendor Vendor { get; set; }
 
         public DateTime CreatedAt { get; set; }
         public DateTime? UpdatedAt { get; set; }

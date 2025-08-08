@@ -13,7 +13,7 @@ namespace Core.Models
         public int CartId { get; set; }
         public Cart Cart { get; set; } = default!;
         public int? ProductVariantId { get; set; }
-        public ProductVarient? ProductVarient { get; set; }
+        public ProductVariant? ProductVarient { get; set; }
         public int Quantity { get; set; }
         public decimal UnitPriceSnapshot { get; set; }
         public DateTime AddedAt { get; set; }

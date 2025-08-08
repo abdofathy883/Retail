@@ -1,4 +1,5 @@
 ﻿using Core.Interfaces;
+using Core.Models;
 using Infrastructure.Data;
 using Infrastructure.Exceptions;
 using Microsoft.EntityFrameworkCore;
@@ -16,10 +17,10 @@ namespace Infrastructure.Repos
         private readonly StoreFrontDbContext dbContext;
         private readonly DbSet<T> dbSet;
 
-        public GenericRepo(StoreFrontDbContext context, DbSet<T> values)
+        public GenericRepo(StoreFrontDbContext context)
         {
             dbContext = context;
-            dbSet = values;
+            dbSet = dbContext.Set<T>();
         }
         public async Task<T> AddAsync(T entity)
         {
@@ -42,27 +43,42 @@ namespace Infrastructure.Repos
             return await dbContext.Set<T>().Where(predicate).ToListAsync();
         }
 
+        public async Task<bool> ExistsAsync(Expression<Func<T, bool>> predicate)
+        {
+            return await dbContext.Set<T>().AnyAsync(predicate);
+        }
+
         public async Task<IReadOnlyList<T>> GetAllAsync()
         {
             return await dbSet.Where(e => e.IsDeleted == false)
                 .AsNoTracking().ToListAsync();
         }
+        public async Task<IReadOnlyList<T>> GetAllForAdminAsync()
+        {
+            return await dbSet.AsNoTracking().ToListAsync();
+        }
 
         public async Task<T?> GetByIdAsync(object id)
         {
-            if (id == null)
-            {
+            if (id is null)
                 throw new NotFoundException($"لا يوجد معرف بهذا الرقم, {id}");
-            }
-            var entity = await dbSet.FindAsync(id);
-            if (entity is null)
-            {
-                throw new ArgumentNullException("لا يوجد كائن لهذا البحث");
-            }
+
+            var entity = await dbSet.FindAsync(id)
+                ?? throw new InValidObjectException("لا يوجد كائن لهذا البحث");
+
             if (entity.IsDeleted)
-            {
                 throw new IsDeletedException($"تم حذف هذا الكائن, {entity}");
-            }
+
+            return entity;
+        }
+        public async Task<T?> GetByIdForAdminAsync(object id)
+        {
+            if (id is null)
+                throw new NotFoundException($"لا يوجد معرف بهذا الرقم, {id}");
+
+            var entity = await dbSet.FindAsync(id)
+                ?? throw new InValidObjectException("لا يوجد كائن لهذا البحث");
+
             return entity;
         }
 
@@ -76,5 +92,14 @@ namespace Infrastructure.Repos
             dbSet.Update(entity);
             return entity;
         }
+
+        public async Task<Product?> GetProductWithVariantsAsync(Guid id)
+        {
+            return await dbContext.Products
+                .Include(p => p.ProductVariants)
+                    //.ThenInclude(v => v.ProductVariantImages)
+                .FirstOrDefaultAsync(p => p.Id == id);
+        }
+
     }
 }

@@ -1,4 +1,4 @@
-﻿using Core.DTOs;
+﻿using Core.DTOs.AuthDTOs;
 using Core.Enums;
 using Core.Interfaces;
 using Core.Models;
@@ -12,31 +12,18 @@ namespace Infrastructure.Services
         private readonly IGenericRepo<ApplicationUser> authService;
         private readonly UserManager<ApplicationUser> userManager;
         private readonly IJWTService jWTService;
-        private readonly EmailService emailService;
+        private readonly IEmailService emailService;
         public AuthService(IGenericRepo<ApplicationUser> repo,
             UserManager<ApplicationUser> user,
             IJWTService jWTService,
-            EmailService emailService)
+            IEmailService emailService)
         {
             authService = repo;
             userManager = user;
             this.jWTService = jWTService;
             this.emailService = emailService;
         }
-        public async Task<bool> DeleteUserAsync(string userId)
-        {
-            await GetUserOrThrow(userId);
-
-            var user = await userManager.FindByIdAsync(userId)
-                ?? throw new InValidObjectException("");
-
-            var result = await userManager.DeleteAsync(user);
-
-            if (!result.Succeeded)
-                throw new Exception();
-            else
-                return true;
-        }
+        
 
         public async Task<UserDTO> GetUserByIdAsync(string userId)
         {
@@ -56,17 +43,17 @@ namespace Infrastructure.Services
         {
             var authDTO = new AuthResponseDTO();
             var user = await userManager.FindByEmailAsync(login.Email);
-            if (user is null || await userManager.CheckPasswordAsync(user, login.Password))
+            if (user is null || !await userManager.CheckPasswordAsync(user, login.Password))
             {
                 authDTO.IsAuthenticated = false;
-                authDTO.Message = "Invalid";
+                authDTO.Message = "لا يوجد حساب بهذه البيانات";
                 return authDTO;
             }
 
             if (user.IsDeleted)
             {
                 authDTO.IsAuthenticated = false;
-                authDTO.Message = "Invalid";
+                authDTO.Message = "هذا الحساب غير موجود";
                 return authDTO;
             }
 
@@ -111,9 +98,7 @@ namespace Infrastructure.Services
         {
             var validateErrors = await ValidateRegisterAsync(newUser);
             if (validateErrors is not null && validateErrors.Count > 0)
-            {
                 return FailResult(string.Join(", ", validateErrors));
-            }
 
             var user = new ApplicationUser
             {
@@ -133,7 +118,7 @@ namespace Infrastructure.Services
                 return FailResult(string.Join(", ", validateErrors));
             }
 
-            await userManager.AddToRoleAsync(user, UserRoles.customer.ToString());
+            await userManager.AddToRoleAsync(user, UserRoles.Customer.ToString());
 
             var authDTO = new AuthResponseDTO
             {
@@ -171,7 +156,7 @@ namespace Infrastructure.Services
             user.PhoneNumber = updatedUser.PhoneNumber;
             user.ConcurrencyStamp = updatedUser.ConcurrencyStamp;
             await userManager.UpdateAsync(user);
-            await userManager.ChangePasswordAsync(user, user.PasswordHash, updatedUser.Password);
+            //await userManager.ChangePasswordAsync(user, user.PasswordHash, updatedUser.Password);
 
             var authDTO = new AuthResponseDTO
             {

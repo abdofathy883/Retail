@@ -14,7 +14,7 @@ namespace Infrastructure.Services
         private readonly IGenericRepo<Cart> cartRepo;
         private readonly IGenericRepo<CartItem> cartItemRepo;
         private readonly IGenericRepo<Product> productRepo;
-        private readonly IGenericRepo<ProductVarient> productVarientRepo;
+        private readonly IGenericRepo<ProductVariant> productVarientRepo;
         private readonly IMapper mapper;
 
         public CartService(
@@ -22,7 +22,7 @@ namespace Infrastructure.Services
         IGenericRepo<Cart> _cartRepo,
         IGenericRepo<CartItem> _cartItemRepo,
         IGenericRepo<Product> productRepo,
-        IGenericRepo<ProductVarient> _productVarientRepo,
+        IGenericRepo<ProductVariant> _productVarientRepo,
         IMapper _mapper)
         {
             userManager = _userManager;
@@ -69,7 +69,7 @@ namespace Infrastructure.Services
                     ProductVariantId = newCartItem.ProductVariantId,
                     Quantity = newCartItem.Quantity,
                     AddedAt = DateTime.UtcNow,
-                    UnitPriceSnapshot = varient.Price
+                    UnitPriceSnapshot = varient.OriginalPrice
                 });
             }
 

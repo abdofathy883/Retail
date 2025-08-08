@@ -11,7 +11,7 @@ namespace Core.Models
     {
         public int Id { get; set; }
         public int ProductVarientId { get; set; }
-        public ProductVarient ProductVarient { get; set; } = default!;
+        public ProductVariant ProductVarient { get; set; } = default!;
         public int WishListId { get; set; }
         public WishList WishList { get; set; } = default!;
         public DateTime AddedAt { get; set; }

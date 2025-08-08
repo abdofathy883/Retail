@@ -1,4 +1,5 @@
-﻿using Core.Interfaces;
+﻿using Core.DTOs.WishListDTOs;
+using Core.Interfaces;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 
@@ -15,14 +16,14 @@ namespace Client_API.Controllers
         }
 
         [HttpPost("add-to-wishlist")]
-        public async Task<IActionResult> AddToWishListAsync(string customerId, int productVarientId)
+        public async Task<IActionResult> AddToWishListAsync(AddToWishListDTO wishListDTO)
         {
-            if (string.IsNullOrEmpty(customerId) || productVarientId == 0)
+            if (!ModelState.IsValid)
             {
                 return BadRequest();
             }
-            await wishListService.AddToWishlistAsync(customerId, productVarientId);
-            return Ok();
+            var result = await wishListService.AddToWishlistAsync(wishListDTO);
+            return Ok(result);
         }
 
         [HttpDelete("clear-wishlist")]
@@ -45,7 +46,7 @@ namespace Client_API.Controllers
             await wishListService.RemoveFromWishlistAsync(customerId, wishlistItemId);
             return Ok();
         }
-        [HttpGet("get-wishlist")]
+        [HttpGet("get-wishlist/{customerId}")]
         public async Task<IActionResult> GetWishListByUserIdAsync(string customerId)
         {
             if (string.IsNullOrEmpty(customerId))

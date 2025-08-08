@@ -1,4 +1,4 @@
-﻿using Core.DTOs;
+﻿using Core.DTOs.AuthDTOs;
 
 namespace Core.Interfaces
 {
@@ -9,7 +9,7 @@ namespace Core.Interfaces
         Task<AuthResponseDTO> RefreshTokenAsync(string token);
         Task<AuthResponseDTO> UpdateUserAsync(string userId, UpdateUserDTO updatedUser);
         Task<bool> SoftDeleteUserAsync(string userId);
-        Task<bool> DeleteUserAsync(string userId);
+        
         Task<UserDTO> GetUserByIdAsync(string userId);
     }
 }

@@ -24,9 +24,12 @@ namespace Infrastructure.Data.ModelConfigurations
                 .IsRequired(false)
                 .HasMaxLength(200);
 
-            builder.HasOne(pi => pi.Product)
-                .WithMany(p => p.ImageUrls)
-                .HasForeignKey(pi => pi.ProductId)
+            builder.Property(pi => pi.ProductVariantId)
+                .IsRequired();
+
+            builder.HasOne(pi => pi.ProductVariant)
+                .WithOne(p => p.VariantImage)
+                .HasForeignKey<ProductImage>(pi => pi.ProductVariantId)
                 .OnDelete(DeleteBehavior.Cascade);
         }
     }

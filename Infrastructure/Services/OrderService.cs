@@ -12,17 +12,17 @@ namespace Infrastructure.Services
     {
         private readonly IGenericRepo<Order> orderRepo;
         private readonly IGenericRepo<Product> productRepo;
-        private readonly IGenericRepo<ProductVarient> productVariantRepo;
+        private readonly IGenericRepo<ProductVariant> productVariantRepo;
         private readonly I_InvoiceService invoiceService;
         private readonly UserManager<ApplicationUser> userManager;
-        private readonly EmailService emailService;
+        private readonly IEmailService emailService;
         private readonly IMapper mapper;
         public OrderService(IGenericRepo<Order> genericRepo, 
             UserManager<ApplicationUser> userManager,
             IGenericRepo<Product> repo,
             I_InvoiceService invoice,
-            EmailService emailService,
-            IGenericRepo<ProductVarient> productVariantRepo,
+            IEmailService emailService,
+            IGenericRepo<ProductVariant> productVariantRepo,
             IMapper _mapper)
         {
             orderRepo = genericRepo;
@@ -64,7 +64,7 @@ namespace Infrastructure.Services
 
             foreach (var item in order.Items)
             {
-                if (item.ProductVariantId == null)
+                if (item.ProductVariantId == 0)
                 {
                     throw new Exception();
                 }

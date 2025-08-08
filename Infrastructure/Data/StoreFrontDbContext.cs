@@ -15,7 +15,7 @@ namespace Infrastructure.Data
         public DbSet<Category> Categories { get; set; }
         public DbSet<Product> Products { get; set; }
         public DbSet<ProductImage> ProductImages { get; set; }
-        public DbSet<ProductVarient> ProductVarients { get; set; }
+        public DbSet<ProductVariant> ProductVarients { get; set; }
         public DbSet<Color> Colors { get; set; }
         public DbSet<Size> Sizes { get; set; }
         public DbSet<WishList> WishLists { get; set; }
@@ -61,7 +61,7 @@ namespace Infrastructure.Data
             modelBuilder.ApplyConfiguration(new OrderItemConfig());
             modelBuilder.ApplyConfiguration(new ProductConfig());
             modelBuilder.ApplyConfiguration(new ProductImageConfig());
-            modelBuilder.ApplyConfiguration(new ProductVarientConfig());
+            modelBuilder.ApplyConfiguration(new ProductVariantConfig());
             modelBuilder.ApplyConfiguration(new SizeConfig());
             modelBuilder.ApplyConfiguration(new WishListConfig());
             modelBuilder.ApplyConfiguration(new WishListItemConfig());

@@ -18,10 +18,6 @@ namespace Infrastructure.Data.ModelConfigurations
             builder.Property(p => p.Description)
                 .HasMaxLength(1000);
 
-            builder.Property(p => p.ProductType)
-                .IsRequired()
-                .HasDefaultValue(ProductType.Simple);
-
             builder.Property(p => p.CategoryId)
                 .IsRequired();
 
@@ -33,12 +29,9 @@ namespace Infrastructure.Data.ModelConfigurations
                 .HasDefaultValueSql("GETDATE()")
                 .ValueGeneratedOnUpdate();
 
-            builder.HasMany(p => p.ImageUrls)
-                .WithOne(pi => pi.Product)
-                .HasForeignKey(pi => pi.ProductId)
-                .OnDelete(DeleteBehavior.Cascade);
+            builder.HasIndex(p => p.CategoryId);
 
-            builder.HasMany(p => p.ProductVarients)
+            builder.HasMany(p => p.ProductVariants)
                 .WithOne(pv => pv.Product)
                 .HasForeignKey(pv => pv.ProductId)
                 .OnDelete(DeleteBehavior.Cascade);

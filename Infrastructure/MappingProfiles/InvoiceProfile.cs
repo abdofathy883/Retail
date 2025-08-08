@@ -9,7 +9,7 @@ using System.Threading.Tasks;
 
 namespace Infrastructure.MappingProfiles
 {
-    internal class InvoiceProfile: Profile
+    public class InvoiceProfile: Profile
     {
         public InvoiceProfile()
         {

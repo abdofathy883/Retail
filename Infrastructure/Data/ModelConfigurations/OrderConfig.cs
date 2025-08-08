@@ -33,15 +33,17 @@ namespace Infrastructure.Data.ModelConfigurations
             builder.Property(o => o.PaymentProvider)
                 .IsRequired();
 
-            builder.HasOne(c => c.UserId)
+            builder.HasOne(o => o.User)
             .WithMany()
             .HasForeignKey(c => c.UserId)
-            .OnDelete(DeleteBehavior.SetNull);
+            .OnDelete(DeleteBehavior.Cascade);
 
             builder.HasMany(o => o.Items)
                 .WithOne(oi => oi.Order)
                 .HasForeignKey(oi => oi.OrderId)
                 .OnDelete(DeleteBehavior.Cascade);
+
+            
 
             builder.OwnsOne(o => o.ShippingAddress, sa =>
             {

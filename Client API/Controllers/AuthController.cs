@@ -1,6 +1,5 @@
-﻿using Core.DTOs;
+﻿using Core.DTOs.AuthDTOs;
 using Core.Interfaces;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Client_API.Controllers
@@ -28,7 +27,7 @@ namespace Client_API.Controllers
         }
 
         [HttpPost("login")]
-        public async Task<IActionResult> LoginAsync([FromForm] LoginDTO login)
+        public async Task<IActionResult> LoginAsync(LoginDTO login)
         {
             if (!ModelState.IsValid)
             {
@@ -53,8 +52,9 @@ namespace Client_API.Controllers
             }
         }
 
+        
         [HttpPost("register")]
-        public async Task<IActionResult> RegisterAsync([FromForm] RegisterDTO register)
+        public async Task<IActionResult> RegisterAsync(RegisterDTO register)
         {
             if (!ModelState.IsValid)
             {
@@ -95,15 +95,6 @@ namespace Client_API.Controllers
             return Ok();
 
         }
-        [HttpDelete]
-        public async Task<IActionResult> PermenintDeleteUserAsync(string userId)
-        {
-            if (string.IsNullOrEmpty(userId))
-            {
-                return BadRequest();
-            }
-            await authService.DeleteUserAsync(userId);
-            return Ok();
-        }
+        
     }
 }

@@ -17,23 +17,30 @@ namespace Client_API.Controllers
         }
 
         [HttpPost("add-to-cart")]
-        public async Task<IActionResult> AddtoCartAsync(CartOwner cartOwner, AddToCartDTO addToCart)
+        public async Task<IActionResult> AddtoCartAsync(AddToCartRequest addToCartRequest)
         {
-            if (cartOwner is null || addToCart is null)
+            if (!ModelState.IsValid)
             {
                 return BadRequest();
             }
+            var cartOwner = addToCartRequest.CartOwner;
+            var addToCart = addToCartRequest.AddToCart;
+
             await cartService.AddToCartAsync(cartOwner, addToCart);
             return Ok();
         }
 
         [HttpPut("update-cart")]
-        public async Task<IActionResult> UpdateCartItemQuantityAsync(CartOwner cartOwner, UpdateCartDTO updateCart)
+        public async Task<IActionResult> UpdateCartItemQuantityAsync(UpdateCartRequest updateCartRequest)
         {
-            if (cartOwner is null || updateCart is null)
+            if (!ModelState.IsValid)
             {
                 return BadRequest();
             }
+
+            var cartOwner = updateCartRequest.CartOwner;
+            var updateCart = updateCartRequest.UpdateCartDTO;
+
             await cartService.UpdateCartItemQuantityAsync(cartOwner, updateCart);
             return Ok();
         }

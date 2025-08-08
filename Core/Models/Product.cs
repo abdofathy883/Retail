@@ -13,9 +13,7 @@ namespace Core.Models
         public Guid Id { get; set; }
         public string Name { get; set; } = default!;
         public string? Description { get; set; }
-        public List<ProductImage>? ImageUrls { get; set; }
-        public ProductType ProductType { get; set; }
-        public List<ProductVarient>? ProductVarients { get; set; }
+        public List<ProductVariant> ProductVariants { get; set; } = new();
         public Guid CategoryId { get; set; }
         public Category Category { get; set; } = default!;
         public DateTime CreatedAt { get; set; }
